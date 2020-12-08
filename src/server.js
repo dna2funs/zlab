@@ -9,8 +9,14 @@ const i_env = {
    server: {
       host: process.env.ZLAB_HOST || '127.0.0.1',
       port: parseInt(process.env.ZLAB_PORT || '8080'),
-      staticDir: process.env.ZLAB_STATIC_DIR?i_path.resolve(process.env.ZLAB_STATIC_DIR):null,
-      httpsCADir: process.env.ZLAB_HTTPS_CA_DIR?i_path.resolve(process.env.ZLAB_HTTPS_CA_DIR):null,
+      staticDir: (
+         process.env.ZLAB_STATIC_DIR?
+         i_path.resolve(process.env.ZLAB_STATIC_DIR):null
+      ),
+      httpsCADir: (
+         process.env.ZLAB_HTTPS_CA_DIR?
+         i_path.resolve(process.env.ZLAB_HTTPS_CA_DIR):null
+      ),
    },
 };
 
@@ -20,6 +26,9 @@ const Mime = {
    '.js': 'text/javascript',
    '.svg': 'image/svg+xml',
    '.json': 'application/json',
+   '.ico': 'image/x-icon',
+   '.png': 'image/png',
+   '.jpg': 'image/jpeg',
    _default: 'text/plain',
    lookup: (filename) => {
       let ext = i_path.extname(filename);
@@ -87,7 +96,7 @@ function serveCode(req, res, code, text) {
 }
 
 function serveStatic (res, base, path) {
-   if (!i_env.debug) return false;
+   if (!i_env.server.staticDir) return false;
    if (path.indexOf('..') >= 0) return false;
    path = path.slice(1);
    if (!path.join('')) path = ['index.html'];

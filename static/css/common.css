@@ -1,0 +1,143 @@
+.header-icon {
+   height: 36px;
+   width: 36px;
+   margin-top: 8px;
+   vertical-align: middle;
+   margin-top:-10px;
+}
+
+body {
+   margin: 0;
+}
+
+.mask {
+   width: 100%;
+   height: 100%;
+   position: fixed;
+   top: 0;
+   left: 0;
+   background: white;
+   opacity: 0.3;
+   z-index: 9000;
+}
+
+.hide {
+   display: none;
+}
+.branding {
+   padding-top: 18px;
+}
+.header {
+   color: #fafafa;
+   padding-left: 24px;
+   height: 60px;
+   background-color: #e4a961;
+   white-space: nowrap;
+}
+.title {
+   font-size: 16px;
+   font-weight: 400;
+   font-family: Metropolis,"Avenir Next","Helvetica Neue",Arial,sans-serif;
+   color: #fafafa;
+   text-decoration: none;
+}
+.nav {
+   height: 36px;
+   margin: 0px;
+   box-shadow: 0 -1px 0 #ccc inset;
+   padding-inline-start: 26px;
+}
+.nav > .nav-item {
+   display: inline-block;
+   list-style-type: none;
+   white-space: nowrap;
+   padding-top: 8px;
+   padding-bottom: 9px;
+}
+.nav-link.active {
+   font-size: 14px;
+   font-weight: 400;
+   box-shadow: 0 -3px 0 #007cbb inset;
+   transition: box-shadow .2s ease-in;
+   padding-bottom: 9px;
+}
+
+div.full-width {
+   width: 100%;
+}
+div.full-width > input {
+   width: 100%;
+}
+.disabled {
+   pointer-events: none;
+}
+.item {
+   display: block;
+   width: 100%;
+   margin-top: 2px;
+   padding: 10px 0px 10px 10px;
+   text-decoration: none;
+   color: black;
+}
+.item-r {
+   display: block;
+   width: 100%;
+   margin-top: 2px;
+   margin-left: -10px;
+   padding: 10px 10px 10px 0;
+   text-decoration: none;
+   text-align: right;
+   color: black;
+}
+.item-btn {
+   display: inline-block;
+   padding: 5px;
+   background-color: white;
+   border-radius: 3px;
+   cursor: pointer;
+}
+.item-badge {
+   border: 1px solid black;
+   padding: 0 5px 0 5px;
+   margin-left: 10px;
+   cursor: pointer;
+}
+.item-input {
+   padding: 5px;
+   border-top: 0;
+   border-left: 0;
+   border-right: 0;
+   border-bottom: 1px solid black;
+   width: 100%;
+}
+a.item-r:hover {
+   opacity: 0.5;
+   cursor: pointer;
+   text-decoration: none;
+   color: black;
+}
+a.item:hover {
+   opacity: 0.5;
+   cursor: pointer;
+   text-decoration: none;
+   color: black;
+}
+.item-btn:hover {
+   border: 1px solid black;
+   color: white;
+   background-color: black;
+   cursor: pointer;
+   text-decoration: none;
+}
+
+.item-grey   { background-color: #e2e2e2; }
+.item-red    { background-color: #f5cdcd; }
+.item-green  { background-color: #cff5cd; }
+.item-blue   { background-color: #cdebf5; }
+.item-yellow { background-color: #fbf59f; }
+.item-orange { background-color: #ffe6cc; }
+.item-pink   { background-color: #f5cde8; }
+.item-purple { background-color: #dfcdf5; }
+.item-gray-1 { background-color: #ddd; }
+.item-gray-2 { background-color: #aaa; }
+.item-gray-3 { background-color: #777; }
