@@ -1,0 +1,26 @@
+{
+  "name": "zlab",
+  "version": "1.0.0",
+  "description": "Z lab, where z = f(x, y)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo 'No test'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dna2funs/zlab.git"
+  },
+  "author": "Seven Lju",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dna2funs/zlab/issues"
+  },
+  "homepage": "https://github.com/dna2funs/zlab#readme",
+  "devDependencies": {
+    "webpack": "^5.10.0",
+    "webpack-cli": "^4.2.0"
+  },
+  "dependencies": {
+    "uuid": "^8.3.1"
+  }
+}
