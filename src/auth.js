@@ -15,6 +15,8 @@ if (!AUTH_BASE_DIR) {
    console.warn('[!] ZLAB_AUTH_BASE_DIR is empty: authentication module not work');
 }
 
+const sessionCache = {};
+
 function validateUsername(username) {
    if (!username) return false;
    if (/[~!@#$%^&*+=\[\]|\\:?]/.test(username)) return false;
@@ -36,6 +38,18 @@ const api = {
       if (!AUTH_BASE_DIR) return null;
       if (!username || !sessionId) return null;
       if (!validateUsername(username)) return null;
+
+      const cache = sessionCache[username];
+      if (cache) {
+         if (sessionId !== cache.uuid) return null;
+         const expect = await api.getUserSession(username);
+         if (expect !== sessionId) {
+            cache.uuid = expect;
+            cache.mtime = new Date().getTime();
+         }
+         return expect;
+      }
+
       const basedir = i_path.join(AUTH_BASE_DIR, '..session');
       const sessfile = i_path.join(basedir, username);
       try {
@@ -51,11 +65,21 @@ const api = {
       if (!AUTH_BASE_DIR) return null;
       if (!validateUsername(username)) return null;
       let sessionId = '';
+
+      const cache = sessionCache[username];
+      if (cache) {
+         if (new Date().getTime() - cache.mtime <= AUTH_SESSION_TIMEOUT) {
+            sessionId = cache.uuid;
+            return sessionId;
+         }
+      }
+
       const basedir = i_path.join(AUTH_BASE_DIR, '..session');
       const sessfile = i_path.join(basedir, username);
       if (!(await i_util.fileOp.exist(basedir))) await i_util.fileOp.mkdir(basedir);
       try {
          const obj = JSON.parse(await i_util.fileOp.read(sessfile));
+         sessionCache[username] = { mtime: obj.mtime, uuid: obj.uuid };
          if (new Date().getTime() - obj.mtime <= AUTH_SESSION_TIMEOUT) {
             sessionId = obj.uuid;
          }
@@ -64,9 +88,11 @@ const api = {
       }
       if (!sessionId) {
          sessionId = i_uuid.v4();
+         const obj = { mtime: new Date().getTime(), uuid: sessionId };
+         sessionCache[username] = obj;
          await i_util.fileOp.write(
             sessfile,
-            Buffer.from(JSON.stringify({ mtime: new Date().getTime(), uuid: sessionId }))
+            Buffer.from(JSON.stringify(obj))
          );
       }
       return sessionId;
