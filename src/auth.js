@@ -2,7 +2,7 @@ const i_fs = require('fs');
 const i_path = require('path');
 const i_uuid = require('uuid');
 
-const i_util = require('../util');
+const i_util = require('util');
 
 const AUTH_BASE_DIR = (
    process.env.ZLAB_AUTH_BASE_DIR?
