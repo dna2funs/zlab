@@ -2,7 +2,7 @@ const i_fs = require('fs');
 const i_path = require('path');
 const i_uuid = require('uuid');
 
-const i_util = require('util');
+const i_util = require('./util');
 
 const AUTH_BASE_DIR = (
    process.env.ZLAB_AUTH_BASE_DIR?
@@ -123,7 +123,7 @@ const api = {
       const obj = {};
       if (!opt || !opt.json) return obj;
       if (opt.nextSessionId === opt.json.uuid) return obj;
-      obj.newUuid = opt.nextSessionId;
+      obj.sessionId = opt.nextSessionId;
       return obj;
    }, // initializeJsonOutput
 };
