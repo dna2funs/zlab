@@ -62,6 +62,14 @@ const api = {
             });
          });
       }, // exist
+      readdir: async (path) => {
+         return new Promise((r, e) => {
+            i_fs.readdir(path, (err, list) => {
+               if (err) return e(err);
+               r(list);
+            });
+         });
+      }, // readdir
       mkdir: async (path) => {
          return new Promise((r, e) => {
             i_fs.mkdir(path, { recursive: true }, (err) => {

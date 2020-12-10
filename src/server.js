@@ -3,6 +3,13 @@ const i_path = require('path');
 const i_url = require('url');
 
 const i_auth = require('./auth');
+const i_api = {
+   app: {
+      family: {
+         expense: require('./app/family/expense').webRestful,
+      }, // family
+   }, // app
+};
 
 const i_env = {
    debug: !!process.env.ZLAB_DEBUG,
@@ -113,10 +120,6 @@ function serveStatic (res, base, path) {
          return false;
       }
       state = i_fs.statSync(filename);
-      if (!state.isFile()) {
-         delete buf[filename];
-         return false;
-      }
       if (buf.mtime === state.mtimeMs) {
          buf = buf.raw;
       } else {
@@ -130,6 +133,9 @@ function serveStatic (res, base, path) {
       }
       buf = i_fs.readFileSync(filename);
       state = i_fs.statSync(filename);
+      if (!state.isFile()) {
+         return false;
+      }
       Cache.pool[filename] = {
          mtime: state.mtimeMs,
          raw: buf
@@ -178,7 +184,8 @@ const server = createServer({
          path: `/${options.path.join('/')}`
       }));
    },
-   auth: i_auth.webRestful
+   auth: i_auth.webRestful,
+   api: i_api,
 });
 server.listen(i_env.server.port, i_env.server.host, () => {
    console.log(`zLab server is listening at ${i_env.server.host}:${i_env.server.port}`);

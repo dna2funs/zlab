@@ -119,6 +119,11 @@ function remove_elem(elem) {
    elem.parentNode.removeChild(elem);
 }
 
+function empty_elem(elem) {
+   while(elem.children.length) elem.removeChild(elem.children[0]);
+   elem.innerHTML = '';
+}
+
 function dispose_component(component) {
    var elem = component.dom;
    remove_elem(elem);
@@ -131,10 +136,40 @@ function update_uuid(jsonData) {
    if (obj.sessionId) set_cookie('zlab_uuid', obj.sessionId);
 }
 
-function isMobileBrowser() {
+function is_mobile_browser() {
    var userAgent = (navigator.userAgent || navigator.vendor || window.opera || '').toLowerCase();
    if (/android|iphone|ipod|kindle/.test(userAgent)) return true;
    return false;
+}
+
+function show_loading() {
+   var div = dom('#pnl-loading');
+   if (!div) {
+      div = document.createElement('div');
+      div.style.zIndex = '9999';
+      div.style.position = 'fixed';
+      div.style.width = '100%';
+      div.style.height  = '100%';
+      div.style.padding = '0';
+      div.style.backgroundColor = 'white';
+      div.style.opacity = '0.5';
+      document.body.appendChild(div);
+   }
+   div.style.display = 'block';
+}
+
+function hide_loading() {
+   var div = dom('#pnl-loading');
+   if (!div) return;
+   div.parentNode.removeChild(div);
+}
+
+function detect_uuid_change(data) {
+   if (!data) return;
+   try {
+   var obj = JSON.parse(data);
+      if (obj.sessionId) set_cookie('zlab_uuid', obj.sessionId);
+   } catch (err) {}
 }
 
 function login_and_start(redirect_url, env, before_init, init_app) {
@@ -150,6 +185,7 @@ function login_and_start(redirect_url, env, before_init, init_app) {
       window.location = redirect_url;
       return;
    }
+   show_loading();
    ajax({
       url: '/auth/echotest',
       json: {
@@ -159,6 +195,7 @@ function login_and_start(redirect_url, env, before_init, init_app) {
    }, function (data) {
       update_uuid(data);
       init_app && init_app();
+      hide_loading();
    }, function () {
       window.location = redirect_url;
    });

@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+   <title>zLab - Family/Expense</title>
+   <meta charset='utf-8' />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+   <link rel="stylesheet" href="/css/common.css" />
+</head>
+<body>
+   <header class="header header-5">
+      <div class="branding">
+         <img class="header-icon" src="/img/logo.png" />&nbsp;
+         <span class="title">zLab</span>
+      </div>
+   </header>
+   <div>
+      <div class="subnav">
+         <ul class="nav">
+            <li class="nav-item"><a id="nav_mline" class="nav-link active">Expense</a></li>
+         </ul>
+      </div>
+      <div class="content-container">
+         <div>
+            <div class="item item-yellow">
+               <button class="item-btn" id="btn-prev-m">&lt;</button>
+               <span id="lbl-date"> Date </span>
+               <button class="item-btn" id="btn-select-m">...</button>
+               <button class="item-btn" id="btn-next-m">&gt;</button>
+            </div>
+            <div class="item item-yellow" id="lbl-self-summary">Self</div>
+               <div><a class="item item-blue" id="btn-expand-add">Add</a></div>
+               <div id="pnl-add-item" style="display:none;">
+                  <div class="item item-purple">Cost:
+                     <div class="full-width">
+                        <input class="item-input" id="txt-cost" placeholder="e.g. 13.14" />
+                     </div>
+                  </div>
+                  <div class="item item-purple">Description:
+                     <div class="full-width">
+                        <input class="item-input" id="txt-desc" placeholder="e.g. goods" />
+                     </div>
+                  </div>
+                  <div><a class="item item-blue" id="btn-add">Submit</a></div>
+                  <div><a class="item item-blue" id="btn-cancel">Cancel</a></div>
+               </div>
+            <div class="item item-gray-1" id="lbl-self-empty">(Empty)</div>
+            <div id="lst-expense"></div>
+            <div class="item item-yellow" id="lbl-shared-summary">Shared</div>
+            <div class="item item-gray-1" id="lbl-shared-empty">(Empty)</div>
+            <div id="lst-shared-expense"></div>
+            <div class="item item-yellow" id="lbl-total-summary">Total: 0</div>
+            <div class="item item-yellow">Settings</div>
+            <div class="item item-purple">
+               ShareTo: <div class="full-width">
+                  <input class="item-input" id="txt-share-to" placeholder="comma separated user list" />
+               </div>
+            </div>
+            <div><a class="item item-blue" id="btn-settings-apply">Apply</a></div>
+         </div>
+      </div></div>
+      <footer>
+         <div class="item item-red"></div>
+      </footer>
+   </div>
+   <script type="text/javascript" src="/js/common.js"></script>
+   <script type="text/javascript" src="/js/family/expense.js"></script>
+</body>
+</html>
+
