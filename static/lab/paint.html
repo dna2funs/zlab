@@ -1,80 +1,91 @@
 <!DOCTYPE HTML>
 <html>
-  <head>
-    <title>zLab - Paint</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1.0, minimum-scale=1.0, maximum-scale=1.0" />
-    <style>
-      body {
-        margin: 0px;
-        padding: 0px;
-        overflow: hidden;
+<head>
+   <title>zLab - Paint</title>
+   <meta charset='utf-8' />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+   <style>
+   body {
+      margin: 0px;
+      padding: 0px;
+      overflow: hidden;
+   }
+   #paint {
+      position: absolute;
+      top: 60px; left: 0;
+      bottom: 0; right: 0;
+   }
+   </style>
+   <link rel="stylesheet" href="../css/common.css" />
+</head>
+<body>
+   <header class="header header-5">
+      <div class="branding">
+         <img class="header-icon" src="../img/logo.png" />&nbsp;
+         <span><a class="title" href="/">zLab</a></span>
+      </div>
+   </header>
+  	<div id="paint"><canvas id="paper"></canva></div>
+   <script>
+   var canvas = document.getElementById('paper');
+   var ctx = canvas.getContext('2d');
+
+   var painting = document.getElementById('paint');
+   var paint_style = getComputedStyle(painting);
+   canvas.width = parseInt(paint_style.getPropertyValue('width'));
+   canvas.height = parseInt(paint_style.getPropertyValue('height'));
+   canvas.style.width = canvas.width + 'px';
+   canvas.style.height = canvas.height + 'px';
+
+   var mouse = {x: 0, y: 0, start: true, on: false};
+
+   function onPaint() {
+      ctx.lineTo(mouse.x, mouse.y);
+      ctx.stroke();
+   }
+   function cursorMove (x, y) {
+      mouse.x = x;
+      mouse.y = y;
+      if (mouse.start) {
+         ctx.beginPath();
+         ctx.moveTo(mouse.x, mouse.y);
+         mouse.start = false;
+      } else {
+         // ctx.lineTo(mouse.x, mouse.y);
+         onPaint();
+         ctx.stroke();
       }
-    </style>
-  </head>
-  <body>
-  	 <div id="paint" style="position:absolute;top:0;left:0;right:0;bottom:0;">
-  		<canvas id="myCanvas"></canvas>
-	 </div>
-    <script>
-    var canvas = document.getElementById('myCanvas');
-    var ctx = canvas.getContext('2d');
+   }
+   function cursorDown () {
+      mouse.on = true;
+   }
+   function cursorUp() {
+      onPaint();
+      mouse.start = true;
+      mouse.on = false;
+   }
 
-    var painting = document.getElementById('paint');
-    var paint_style = getComputedStyle(painting);
-    canvas.width = parseInt(paint_style.getPropertyValue('width'));
-    canvas.height = parseInt(paint_style.getPropertyValue('height'));
-    canvas.style.width = canvas.width + 'px';
-    canvas.style.height = canvas.height + 'px';
+   canvas.addEventListener('mousemove', function(e) {
+      if (!mouse.on) return;
+      cursorMove(e.pageX - this.offsetLeft, e.pageY - this.offsetTop - 60);
+   }, false);
 
-    var mouse = {x: 0, y: 0, start: true, on: false};
+   canvas.addEventListener('touchmove', function(e) {
+      if (!mouse.on) return;
+      var T = e.touches && e.touches[0];
+      if (!T) return;
+      cursorMove(T.pageX - this.offsetLeft, T.pageY - this.offsetTop - 60);
+   }, false);
 
-    function onPaint() {
-       ctx.lineTo(mouse.x, mouse.y);
-       ctx.stroke();
-    }
-    function cursorMove (x, y) {
-       mouse.x = x;
-       mouse.y = y;
-       if (mouse.start) {
-          ctx.beginPath();
-          ctx.moveTo(mouse.x, mouse.y);
-          mouse.start = false;
-       } else {
-          // ctx.lineTo(mouse.x, mouse.y);
-          onPaint();
-          ctx.stroke();
-       }
-    }
-    function cursorDown () {
-       mouse.on = true;
-    }
-    function cursorUp() {
-       onPaint();
-       mouse.start = true;
-       mouse.on = false;
-    }
-
-    canvas.addEventListener('mousemove', function(e) {
-       if (!mouse.on) return;
-       cursorMove(e.pageX - this.offsetLeft, e.pageY - this.offsetTop);
-    }, false);
-
-    canvas.addEventListener('touchmove', function(e) {
-       if (!mouse.on) return;
-       var T = e.touches && e.touches[0];
-       if (!T) return;
-       cursorMove(T.pageX - this.offsetLeft, T.pageY - this.offsetTop);
-    }, false);
-
-    ctx.lineWidth = 3;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#00CC99';
+   ctx.lineWidth = 3;
+   ctx.lineJoin = 'round';
+   ctx.lineCap = 'round';
+   ctx.strokeStyle = '#00CC99';
  
-    canvas.addEventListener('mousedown', cursorDown, false);
-    canvas.addEventListener('mouseup', cursorUp, false);
-    canvas.addEventListener('touchstart', cursorDown, false);
-    canvas.addEventListener('touchend', cursorUp, false);
-    </script>
-  </body>
+   canvas.addEventListener('mousedown', cursorDown, false);
+   canvas.addEventListener('mouseup', cursorUp, false);
+   canvas.addEventListener('touchstart', cursorDown, false);
+   canvas.addEventListener('touchend', cursorUp, false);
+   </script>
+</body>
 </html>
