@@ -225,37 +225,40 @@ function renderList(container, obj, append, editable) {
 }
 
 function updateSummary() {
-   var s1 = { checked: 0, total: 0 };
-   var s2 = { checked: 0, total: 0 };
-   var st = { checked: 0, total: 0 };
+   var s1 = { unchecked: 0, total: 0 };
+   var s2 = { unchecked: 0, total: 0 };
+   var st = { unchecked: 0, total: 0 };
    (env.self.items || []).forEach(function (item) {
       if (!item) return;
-      if (item.p) s1.checked += item.c;
+      if (!item.p) s1.unchecked += item.c;
       s1.total += item.c;
    });
    env.shared.forEach(function (block) {
       (block.items || []).forEach(function (item) {
          if (!item) return;
-         if (item.p) s2.checked += item.c;
+         if (!item.p) s2.unchecked += item.c;
          s2.total += item.c;
       });
    });
-   st.checked = s1.checked + s2.checked;
+   st.unchecked = s1.unchecked + s2.unchecked;
    st.total = s1.total + s2.total;
 
    ui.label.self_summary.innerHTML = (
-      'Self: ' + formatNumber(s1.checked) + ' / ' + formatNumber(s1.total)
+      'Self: ' + formatNumber(s1.total) +
+      (s1.unchecked?(' (' + formatNumber(s1.unchecked) + ')'):'')
    );
    ui.label.shared_summary.innerHTML = (
-      'Shared: ' + formatNumber(s2.checked) + ' / ' + formatNumber(s2.total)
+      'Shared: ' + formatNumber(s2.total) +
+      (s2.unchecked?(' (' + formatNumber(s2.unchecked) + ')'):'')
    );
    ui.label.total_summary.innerHTML = (
-      'Total: ' + formatNumber(st.checked) + ' / ' + formatNumber(st.total)
+      'Total: ' + formatNumber(st.total) +
+      (st.unchecked?(' (' + formatNumber(st.unchecked) + ')'):'')
    );
 }
 
 function formatNumber(num) {
-   num = Math.floor(num * 100) / 100;
+   num = Math.round(num * 100) / 100;
    var str = '' + num;
    var i = str.indexOf('.');
    if (i < 0) return str + '.00';
@@ -294,6 +297,7 @@ function loadData(year, month) {
       }
 
       count = 0;
+      empty_elem(ui.list.shared_expense);
       for (i = 0, n = env.shared.length; i < n; i++) {
          items = env.shared[i].items;
          if (!items || !items.length) continue;
