@@ -99,7 +99,7 @@ function serveStatic (res, base, path) {
    if (!i_env.server.staticDir) return false;
    if (path.indexOf('..') >= 0) return false;
    path = path.slice(1);
-   if (!path.join('')) path = ['index.html'];
+   if (path.length && !path[path.length-1]) path[path.length-1] = 'index.html';
    if (!Cache.pool) Cache.pool = {};
    let filename = i_path.join(base, ...path);
    let mimetype = Mime.lookup(filename);
@@ -113,6 +113,10 @@ function serveStatic (res, base, path) {
          return false;
       }
       state = i_fs.statSync(filename);
+      if (!state.isFile()) {
+         delete buf[filename];
+         return false;
+      }
       if (buf.mtime === state.mtimeMs) {
          buf = buf.raw;
       } else {
