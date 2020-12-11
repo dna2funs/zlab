@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+   <title>zLab - QR Code</title>
+   <meta charset='utf-8' />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+   <link rel="stylesheet" href="../css/common.css" />
+</head>
+<body>
+   <header class="header header-5">
+      <div class="branding">
+         <img class="header-icon" src="../img/logo.png" />&nbsp;
+         <span><a class="title" href="/">zLab</a></span>
+      </div>
+   </header>
+
+   <div class="item item-yellow">QR Code</div>
+   <div id="manifest_panel_add">
+   <div class="item">Text:
+      <div class="full-width"><input id="txt-qrcode" class="item-input" placeholder="https://mtgol7.cn" /></div>
+   </div>
+   <div class="item">Size:
+      <div class="full-width"><input id="txt-size" class="item-input" placeholder="150" value="150" /></div>
+   </div>
+   <div><a id="btn-generate" class="item item-blue">Generate</a></div>
+   </div>
+   <div id="qrcode" style="margin: 10px;"></div>
+   <script src="../js/3rd/qrcode.min.js"></script>
+   <script>
+   function init_qrcode(size, text) {
+      return new QRCode(document.querySelector('#qrcode'), {
+         text: text || 'https://mtgol7.cn',
+         width: size, height: size
+         // colorDark: '#000000', colorLight: '#ffffff',
+         // correctLevel: QRCode.CorrectLevel.H
+      });
+   }
+   var last_size = 150;
+   var ui = {
+      qrcode: init_qrcode(last_size),
+      txt: {
+         contents: document.querySelector('#txt-qrcode'),
+         size: document.querySelector('#txt-size')
+      },
+      btn: {
+         generate: document.querySelector('#btn-generate')
+      }
+   };
+
+   ui.btn.generate.addEventListener('click', function () {
+      var size = parseInt(ui.txt.size.value) || 150;
+      if (!size) return ui.txt.size.focus();
+      if (!ui.txt.contents.value) return ui.txt.contents.focus();
+      if (size === last_size) {
+         ui.qrcode.makeCode(ui.txt.contents.value);
+      } else {
+         last_size = size;
+         dom('#qrcode').innerHTML = '';
+         ui.qrcode = init_qrcode(size, ui.txt.contents.value);
+      }
+   });
+   </script>
+</body>
+</html>
