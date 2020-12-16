@@ -14,6 +14,21 @@
       position: absolute;
       top: 60px; left: 0;
       bottom: 0; right: 0;
+      z-index: 1;
+   }
+   #pnl-menu {
+      position: fixed;
+      top: 60px; left: 0;
+      bottom: 0; right: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background-color: white;
+      opacity: 0.8;
+      z-index: 10;
+   }
+   #btn-menu {
+      position: fixed;
+      top: 15px; right: 10px;
    }
    </style>
    <link rel="stylesheet" href="../css/common.css" />
@@ -25,6 +40,12 @@
          <span><a class="title" href="/">zLab</a></span>
       </div>
    </header>
+   <div><a id="btn-menu" class="item-btn item-orange">Menu</a></div>
+   <div id="pnl-menu" style="display:none;">
+      <div><a id="btn-brush" class="item item-orange" href="javascript:void(0);">Brush</a></div>
+      <div><a id="btn-eraser" class="item item-yellow" href="javascript:void(0);">Eraser</a></div>
+      <div><a id="btn-cleanup" class="item item-red" href="javascript:void(0);">Cleanup</a></div>
+   </div>
   	<div id="paint"><canvas id="paper"></canva></div>
    <script>
    var canvas = document.getElementById('paper');
@@ -32,12 +53,19 @@
 
    var painting = document.getElementById('paint');
    var paint_style = getComputedStyle(painting);
+
    canvas.width = parseInt(paint_style.getPropertyValue('width'));
    canvas.height = parseInt(paint_style.getPropertyValue('height'));
    canvas.style.width = canvas.width + 'px';
    canvas.style.height = canvas.height + 'px';
 
    var mouse = {x: 0, y: 0, start: true, on: false};
+   var draw = {
+      brushLineWidth: 3,
+      brushStrokeStyle: '#00CC99',
+      eraseLineWidth: 10,
+      eraseStrokeStyle: 'white'
+   };
 
    function onPaint() {
       ctx.lineTo(mouse.x, mouse.y);
@@ -77,15 +105,65 @@
       cursorMove(T.pageX - this.offsetLeft, T.pageY - this.offsetTop - 60);
    }, false);
 
-   ctx.lineWidth = 3;
    ctx.lineJoin = 'round';
    ctx.lineCap = 'round';
-   ctx.strokeStyle = '#00CC99';
+   ctx.lineWidth = draw.brushLineWidth;
+   ctx.strokeStyle = draw.brushStrokeStyle;
  
    canvas.addEventListener('mousedown', cursorDown, false);
    canvas.addEventListener('mouseup', cursorUp, false);
    canvas.addEventListener('touchstart', cursorDown, false);
    canvas.addEventListener('touchend', cursorUp, false);
+
+   function showMenu() {
+      menu_ui.panel.menu.style.display = 'block';
+      cursorUp();
+   }
+   function hideMenu() {
+      menu_ui.panel.menu.style.display = 'none';
+   }
+   function switchMenu() {
+      if (menu_ui.panel.menu.style.display === 'none') {
+         showMenu();
+      } else {
+         hideMenu();
+      }
+   }
+   function resetMenuUI() {
+      menu_ui.btn.brush.className = 'item item-yellow';
+      menu_ui.btn.eraser.className = 'item item-yellow';
+   }
+
+   var menu_ui = {
+      btn: {
+         menu: document.querySelector('#btn-menu'),
+         brush: document.querySelector('#btn-brush'),
+         eraser: document.querySelector('#btn-eraser'),
+         cleanup: document.querySelector('#btn-cleanup')
+      },
+      panel: {
+         menu: document.querySelector('#pnl-menu')
+      }
+   };
+
+   menu_ui.btn.menu.addEventListener('click', function () { switchMenu(); });
+   menu_ui.panel.menu.addEventListener('click', function () { hideMenu(); });
+   menu_ui.btn.brush.addEventListener('click', function () {
+      resetMenuUI();
+      menu_ui.btn.brush.className = 'item item-orange';
+      ctx.lineWidth = draw.brushLineWidth;
+      ctx.strokeStyle = draw.brushStrokeStyle;
+   });
+   menu_ui.btn.eraser.addEventListener('click', function () {
+      resetMenuUI();
+      menu_ui.btn.eraser.className = 'item item-orange';
+      ctx.lineWidth = draw.eraseLineWidth;
+      ctx.strokeStyle = draw.eraseStrokeStyle;
+   });
+   menu_ui.btn.cleanup.addEventListener('click', function () {
+      ctx.fillStyle = 'white';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+   });
    </script>
 </body>
 </html>
