@@ -55,7 +55,7 @@
          ui.qrcode.makeCode(ui.txt.contents.value);
       } else {
          last_size = size;
-         dom('#qrcode').innerHTML = '';
+         document.querySelector('#qrcode').innerHTML = '';
          ui.qrcode = init_qrcode(size, ui.txt.contents.value);
       }
    });
