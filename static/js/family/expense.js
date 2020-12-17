@@ -116,7 +116,7 @@ on(ui.btn.item_add, 'click', function () {
       p: false
    });
    uploadItems(function () {
-      ui.btn.expand_add_panel.style.display = 'block';
+      ui.btn.expand_add_panel.parentNode.style.display = 'block';
       ui.panel.item_add.style.display = 'none';
 
       ui.label.self_empty.style.display = 'none';
