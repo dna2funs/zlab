@@ -293,16 +293,16 @@ QQShuru.HWPanel = function(obj) {
     m(i, "mouseup", n);
     m(i, "dblclick", V);
     m(i, "touchstart", function (evt) {
+       evt.preventDefault();
        var T = evt.touches && evt.touches[0];
        if (!T) return;
-       //console.log(T);
        l({ button: o?1:0, layerX: ~~T.pageX, layerY: ~~(T.pageY - oT) });
     });
     var oT = i.offsetTop;
     m(i, "touchmove", function (evt) {
+       evt.preventDefault();
        var T = evt.touches && evt.touches[0];
        if (!T) return;
-       //console.log(T);
        A({ button: o?1:0, layerX: ~~T.pageX, layerY: ~~(T.pageY - oT) });
     });
     m(i, "touchend", function (evt) {
