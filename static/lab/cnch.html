@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+   <title>zLab - Chinese Character</title>
+   <meta charset='utf-8' />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+   <link rel="stylesheet" href="../css/common.css" />
+   <style>
+   #cnch_paper {
+      width: 300px;
+      height: 300px;
+      background-color: #eee;
+   }
+   </style>
+</head>
+<body>
+   <header class="header header-5">
+      <div class="branding">
+         <img class="header-icon" src="../img/logo.png" />&nbsp;
+         <span><a class="title" href="/">zLab</a></span>
+      </div>
+   </header>
+
+   <div class="item item-yellow">Hand-writing Character Recognition</div>
+   <div><a id="btn_back" class="item item-blue" href="javascript:void(0)">Undo</a></div>
+   <div><a id="btn_clear" class="item item-blue" href="javascript:void(0)">Reset</a></div>
+   <canvas id="cnch_paper" width=300 height=300></canvas>
+   <div class="item item-green"><pre id="result"></pre></div>
+   <script src="../js/common.js"></script>
+   <script src="../js/3rd/qqshuru.js"></script>
+   <script>
+   function evtRecognized(ret) {
+      var div = dom('#result');
+      div.innerHTML = '';
+      div.appendChild(document.createTextNode(
+         JSON.stringify(ret.cand || [])
+      ));
+   }
+
+   QQShuru.HWPanel({
+      canvasId: '#cnch_paper',
+      lineColor: 'black',
+      backBtnId: '#btn_back',
+      clearBtnId: '#btn_clear',
+      callback: evtRecognized
+   });
+   QQShuru.HWPanel
+   </script>
+</body>
+</html>
