@@ -1,6 +1,10 @@
 // copy from:
 // https://www.shejiwo.net/tutorials/850.html
 
+// modified:
+// - add mobile touch support
+// - remove 0,0 delta
+
 QQShuru = {};
 QQShuru.Util = {};
 QQShuru.Util.Browser = {};
@@ -16,12 +20,12 @@ QQShuru.Util.Ajax.get = function(a, c) {
     if (QQShuru.Util.Browser.isIE) {
         b.onreadystatechange = function() {
             if (b.readyState == "loaded") {
-                document.getElementsByTagName("head")[0].removeChild(b)
+                document.getElementsByTagName("head")[0].removeChild(b);
             }
         }
     } else {
         b.onload = function() {
-            document.getElementsByTagName("head")[0].removeChild(b)
+            document.getElementsByTagName("head")[0].removeChild(b);
         }
     }
 };
@@ -29,46 +33,37 @@ QQShuru.Util.Event = {};
 QQShuru.Util.Event.addEvent = function() {
     if (QQShuru.Util.Browser.isIE) {
         return function(b, c, a) {
-            b.attachEvent("on" + c, a)
+            b.attachEvent("on" + c, a);
         }
     } else {
         return function(b, c, a, d) {
-            b.addEventListener(c, a, d || false)
+            b.addEventListener(c, a, d || false);
         }
     }
 } ();
 QQShuru.Util.Event.remEvent = function() {
     if (QQShuru.Util.Browser.isIE) {
         return function(b, c, a) {
-            b.detachEvent("on" + c, a)
+            b.detachEvent("on" + c, a);
         }
     } else {
         return function(b, c, a, d) {
-            b.removeEventListener(c, a, d || false)
+            b.removeEventListener(c, a, d || false);
         }
     }
 } ();
 QQShuru.Util.Event.getPoint = function(a) {
     if (QQShuru.Util.Browser.isIE) {
-        return [a.x, a.y]
+        return [a.x, a.y];
+    } else if (a.layerX !== undefined) {
+        return [a.layerX, a.layerY];
     } else {
-        return [a.layerX, a.layerY]
+       return null;
     }
 };
-/*
-    初始化函数
-*   params:obj
-*   obj={
-*       canvasId:canvas的id  --required
-*       lineColor:  默认#606060  ,
-*       lineWidth:  默认10
-*       backBtnId: 退一步按钮id
-*       clearBtnId:清空canvas按钮id
-*       callback:func  每次请求后回调
-*   }
-*
-*
-*/
+
+// { canvasId, lineColor, lineWidth, backBtnId, clearBtnId, callback }
+// id = selector, e.g. #canvas
 QQShuru.HWPanel = function(obj) {
     var o = QQShuru.Util.Browser.isIE;
     var m = QQShuru.Util.Event.addEvent;
@@ -84,18 +79,36 @@ QQShuru.HWPanel = function(obj) {
     var i = document.querySelector(obj.canvasId);
     var v = o ? 1 : 0;
     var a = 2;
-    var N = i.clientHeight;//canvas宽度
-    var R = i.clientHeight;//canvas高度
-    var c = obj.lineColor?obj.lineColor:"#606060"; //线条颜色
-    var y = obj.lineWidth?obj.lineWidth:10;//线条宽度
+    var N = i.clientWidth;
+    var R = i.clientHeight;
+    var c = obj.lineColor||"#606060";
+    var y = obj.lineWidth||10;
     var t = "round";
     var J = !!i.getContext;
-    if (J) {
-        var Q = i.getContext("2d");
+    var cP = function clearCanvas() {
+        Q.fillStyle = '#eee';
+        Q.fillRect(0, 0, N, R);
+        Q.lineCap = '';
+        Q.lineJoin = '';
+        Q.lineWidth = 2;
+        Q.strokeStyle = '#ccc';
+        Q.beginPath();
+        Q.moveTo(0, R/2);
+        Q.lineTo(N, R/2);
+        Q.stroke();
+        Q.beginPath();
+        Q.moveTo(N/2, 0);
+        Q.lineTo(N/2, R);
+        Q.stroke();
+
         Q.lineCap = t;
         Q.lineJoin = t;
         Q.lineWidth = y;
-        Q.strokeStyle = c
+        Q.strokeStyle = c;
+    };
+    if (J) {
+        var Q = i.getContext("2d");
+        cP();
     }
     var L = false;
     var P = false;
@@ -109,14 +122,13 @@ QQShuru.HWPanel = function(obj) {
         C = [];
     pointsDeltaXY = [];
     var k = [0, 0];
-    //鼠标按下事件
-    var l = function(W) {
+    var l = function evtMouseDown (W) {
         if (v !== W.button) {
-            return
+            return;
         }
         var Y = B(W);
         if (!Y) {
-            return
+            return;
         }
         L = true;
         r = 0;
@@ -136,26 +148,25 @@ QQShuru.HWPanel = function(obj) {
         pointsDeltaXY[r * 2 + 1] = Y[1];
         if (J) {
             Q.beginPath();
-            Q.moveTo(Y[0], Y[1])
+            Q.moveTo(Y[0], Y[1]);
         }
         k[0] = Y[0];
         k[1] = Y[1];
         r++;
         if (o) {
             m(i, "losecapture", n);
-            i.setCapture()
+            i.setCapture();
         } else {
-            m(window, "blur", n)
+            m(window, "blur", n);
         }
     };
-    //鼠标移动事件
-    var A = function(W) {
+    var A = function evtMouseMove (W) {
         if (!L) {
-            return
+            return;
         }
-        var Y = B(W);//坐标
+        var Y = B(W);
         if (!Y) {
-            return
+            return;
         }
         e[r] = Y[0];
         d[r] = Y[1];
@@ -163,30 +174,30 @@ QQShuru.HWPanel = function(obj) {
         I[r * 2 + 1] = Y[1];
         D[r] = Y[0] - k[0];
         C[r] = Y[1] - k[1];
+        if (D[r] === 0 && C[r] === 0) return;
         pointsDeltaXY[r * 2] = D[r];
         pointsDeltaXY[r * 2 + 1] = C[r];
         if (J) {
             Q.lineTo(Y[0], Y[1]);
-            Q.stroke()
+            Q.stroke();
         } else {
             var X = T[u].e.path;
-            X.value = X.value.replace(" e", "," + Y[0] + "," + Y[1] + " e")
+            X.value = X.value.replace(" e", "," + Y[0] + "," + Y[1] + " e");
         }
         k[0] = Y[0];
         k[1] = Y[1];
-        r++
+        r++;
     };
-    //鼠标松开事件
-    var n = function(W) {
+    var n = function evtMouseUp (W) {
         if (!L) {
-            return
+            return;
         }
         L = false;
         if (1 === r) {
             if (!J) {
-                T[u].e.style.visibility = "hidden"
+                T[u].e.style.visibility = "hidden";
             }
-            return
+            return;
         }
         if (J) {
             Q.closePath();
@@ -196,7 +207,7 @@ QQShuru.HWPanel = function(obj) {
             T[u] = {
                 e: Z
             };
-            Z = null
+            Z = null;
         }
         var aa = T[u];
         aa.count = r;
@@ -209,50 +220,52 @@ QQShuru.HWPanel = function(obj) {
         u++;
         var X = [];
         for (var Y = 0; Y < r; Y++) {
-            X[Y] = "[" + e[Y] + ", " + d[Y] + "]"
+            X[Y] = "[" + e[Y] + ", " + d[Y] + "]";
         }
         if (o) {
             j(i, "losecapture", n);
-            i.releaseCapture()
+            i.releaseCapture();
         } else {
             j(window, "blur", n)
         }
         if (1 === u) {
-            i.className = "writting"
+            i.className = "writting";
         }
         s(u);
     };
-    //清空所有
-    var V = function(W) {
+    var V = function resetCallBack(W) {
         if (0 === u) {
-            return
+            return;
         }
         var ab = "";
         if (J) {
-            Q.clearRect(0, 0, N, R)
+            Q.clearRect(0, 0, N, R);
+            cP();
         }
         for (var Z = 0; Z < u; Z++) {
-            T[Z].e.style.visibility = "hidden"
+            T[Z].parentNode && T[Z].parentNode.removeChild(T[Z]);
+            // T[Z].e.style.visibility = "hidden";
         }
+        while(T.length) T.pop();
         u = 0;
-        i.className = ""
+        i.className = "";
     };
-    //退一笔
-    var g = function(W) {
+    var g = function undoCallBack(W) {
         if (0 === u) {
-            return
+            return;
         }
         if (1 === u) {
             V();
-            return
+            return;
         }
         u--;
         if (J) {
             Q.clearRect(0, 0, N, R);
-            Q.drawImage(T[u - 1].e, 0, 0)
+            cP();
+            Q.drawImage(T[u - 1].e, 0, 0);
         }
         T[u].e.style.visibility = "hidden";
-        s(u)
+        s(u);
     };
     var p = function(W, ab) {
         var aa = ab || W.length;
@@ -262,26 +275,39 @@ QQShuru.HWPanel = function(obj) {
             var ac = W[X];
             ad = X ? ",eb,": "";
             var Y = ad + ac.deltaXY.join(",");
-            Z += Y
+            Z += Y;
         }
-        return Z
+        return Z;
     };
-    this.ajax_callback = function(X) {
-        obj.callback&&obj.callback(X)
-    };
-    QQShuru.HWPanel.ajax_callback = this.ajax_callback;
+    QQShuru.HWPanel.ajax_callback = obj.callback || (function () {});
     var s = function(Y) {
         var Z = p(T, Y);
         var ab = "QQShuru.HWPanel.ajax_callback";
         var W = "http://handwriting.shuru.qq.com/cloud/cgi-bin/cloud_hw_pub.wsgi";
         var aa = "track_str=" + Z + "&cmd=0";
         var X = W + "?" + aa;
-        QQShuru.Util.Ajax.get(X, ab)
+        QQShuru.Util.Ajax.get(X, ab);
     };
     m(i, "mousedown", l);
     m(i, "mousemove", A);
     m(i, "mouseup", n);
     m(i, "dblclick", V);
+    m(i, "touchstart", function (evt) {
+       var T = evt.touches && evt.touches[0];
+       if (!T) return;
+       //console.log(T);
+       l({ button: o?1:0, layerX: ~~T.pageX, layerY: ~~(T.pageY - oT) });
+    });
+    var oT = i.offsetTop;
+    m(i, "touchmove", function (evt) {
+       var T = evt.touches && evt.touches[0];
+       if (!T) return;
+       //console.log(T);
+       A({ button: o?1:0, layerX: ~~T.pageX, layerY: ~~(T.pageY - oT) });
+    });
+    m(i, "touchend", function (evt) {
+       n();
+    });
     m(i, "contextmenu",
         function(W) {
             o ? (W.returnValue = false) : W.preventDefault()
@@ -293,6 +319,4 @@ QQShuru.HWPanel = function(obj) {
     if(obj.clearBtnId){
         m(document.querySelector(obj.clearBtnId), "click", V);
     }
-    this.clear=V;//暴露清空canvas的方法到外部
-    this.back=g;//暴露退一步的方法到外部
 };
