@@ -310,6 +310,7 @@ function loadData(year, month) {
       count = env.self.items.length;
       summary = { checked: 0, total: 0 };
       renderList(ui.list.self_expense, env.self, false, true);
+      ui.btn.yearly_summary.innerHTML = 'Click to show Yearly Total';
       ui.label.self_empty.style.display = 'none';
       ui.list.self_expense.style.display = 'block';
       if (!count) {
@@ -340,15 +341,16 @@ function loadData(year, month) {
 }
 
 function updateYearlySummary(data) {
+   data = JSON.parse(data);
    ui.btn.yearly_summary.innerHTML = 'Yearly Total:<br/>';
    ui.btn.yearly_summary.appendChild(
       document.createTextNode(' - Total: ' + data.total + ' / ' + data.total_total)
    );
-   ui.btn.yearly_summary.appendChild(document.createEleemnt('br'));
+   ui.btn.yearly_summary.appendChild(document.createElement('br'));
    ui.btn.yearly_summary.appendChild(
       document.createTextNode(' - Mine: ' + data.mine + ' / ' + data.mine_total)
    );
-   ui.btn.yearly_summary.appendChild(document.createEleemnt('br'));
+   ui.btn.yearly_summary.appendChild(document.createElement('br'));
    ui.btn.yearly_summary.appendChild(
       document.createTextNode(' - Shared: ' + data.shared + ' / ' + data.shared_total)
    );

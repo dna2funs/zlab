@@ -136,7 +136,7 @@ const restful = {
          i_util.e500(res);
       }
    }),
-   yearly: i_atuh.requireLogin(async (req, res, opt) => {
+   yearly: i_auth.requireLogin(async (req, res, opt) => {
       const username = opt.json.user;
       const year = parseInt(opt.json.year, 10);
       const month = parseInt(opt.json.month, 10);
@@ -156,14 +156,14 @@ const restful = {
             const selfItems = await api.readExpense(username, year, m);
             (selfItems && selfItems.items || []).forEach((x) => {
                obj.mine_total += x.c;
-               if (!x.p) obj.mine += x.c;
+               if (x.p) obj.mine += x.c;
             });
             for (let i = 0, n = sharedFrom.length; i < n; i++) {
                const user = sharedFrom[i];
                const sharedObj = await api.readExpense(user, year, m);
                (sharedObj.items || []).forEach((x) => {
                   obj.shared_total += x.c;
-                  if (!x.p) obj.shared += x.c;
+                  if (x.p) obj.shared += x.c;
                });
             }
          }
