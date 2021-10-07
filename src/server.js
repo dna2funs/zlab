@@ -4,6 +4,10 @@ const i_url = require('url');
 
 const i_auth = require('./auth');
 const i_api = {
+   test: (req, res, options) => {
+      console.log(options);
+      res.end('');
+   },
    app: {
       family: {
          expense: require('./app/family/expense').webRestful,
@@ -131,11 +135,11 @@ function serveStatic (res, base, path) {
       if (!i_fs.existsSync(filename)) {
          return false;
       }
-      buf = i_fs.readFileSync(filename);
       state = i_fs.statSync(filename);
       if (!state.isFile()) {
          return false;
       }
+      buf = i_fs.readFileSync(filename);
       Cache.pool[filename] = {
          mtime: state.mtimeMs,
          raw: buf

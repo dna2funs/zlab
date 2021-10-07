@@ -29,7 +29,8 @@ var ui = {
       expand_add_panel: dom('#btn-expand-add'),
       item_add: dom('#btn-add'),
       item_cancel: dom('#btn-cancel'),
-      settings_apply: dom('#btn-settings-apply')
+      settings_apply: dom('#btn-settings-apply'),
+      yearly_summary: dom('#lbl-yearly-summary')
    }
 };
 
@@ -146,6 +147,26 @@ on(ui.btn.settings_apply, 'click', function () {
       }
    }, function (data) {
       detect_uuid_change(data);
+      hide_loading();
+   }, function (err) {
+      alert('error:' + err);
+      hide_loading();
+   });
+});
+on(ui.btn.yearly_summary, 'click', function (evt) {
+   show_loading();
+   ajax({
+      method: 'POST',
+      url: '/api/app/family/expense/yearly',
+      json: {
+         user: env.user.user,
+         uuid: env.user.uuid,
+         year: env.cursorYear,
+         month: env.cursorMonth
+      }
+   }, function (data) {
+      detect_uuid_change(data);
+      updateYearlySummary(data);
       hide_loading();
    }, function (err) {
       alert('error:' + err);
@@ -316,6 +337,21 @@ function loadData(year, month) {
    }, function (err) {
       alert(err);
    });
+}
+
+function updateYearlySummary(data) {
+   ui.btn.yearly_summary.innerHTML = 'Yearly Total:<br/>';
+   ui.btn.yearly_summary.appendChild(
+      document.createTextNode(' - Total: ' + data.total + ' / ' + data.total_total)
+   );
+   ui.btn.yearly_summary.appendChild(document.createEleemnt('br'));
+   ui.btn.yearly_summary.appendChild(
+      document.createTextNode(' - Mine: ' + data.mine + ' / ' + data.mine_total)
+   );
+   ui.btn.yearly_summary.appendChild(document.createEleemnt('br'));
+   ui.btn.yearly_summary.appendChild(
+      document.createTextNode(' - Shared: ' + data.shared + ' / ' + data.shared_total)
+   );
 }
 
 function before() {}

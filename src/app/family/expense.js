@@ -135,7 +135,46 @@ const restful = {
       } catch (err) {
          i_util.e500(res);
       }
-   })
+   }),
+   yearly: i_atuh.requireLogin(async (req, res, opt) => {
+      const username = opt.json.user;
+      const year = parseInt(opt.json.year, 10);
+      const month = parseInt(opt.json.month, 10);
+      if (!year || !month) return i_util.e400(res);
+      if (year <= 1900 || year > 10000 || month <= 0 || month > 12) return i_util.e400(res);
+      try {
+         const obj = {
+            total: 0,
+            total_total: 0,
+            mine: 0,
+            mine_total: 0,
+            shared: 0,
+            shared_total: 0
+         };
+         const sharedFrom = await api.getSharedFrom(username);
+         for (let m = 1; m <= month; m++) {
+            const selfItems = await api.readExpense(username, year, m);
+            (selfItems && selfItems.items || []).forEach((x) => {
+               obj.mine_total += x.c;
+               if (!x.p) obj.mine += x.c;
+            });
+            for (let i = 0, n = sharedFrom.length; i < n; i++) {
+               const user = sharedFrom[i];
+               const sharedObj = await api.readExpense(user, year, m);
+               (sharedObj.items || []).forEach((x) => {
+                  obj.shared_total += x.c;
+                  if (!x.p) obj.shared += x.c;
+               });
+            }
+         }
+         obj.total = obj.mine + obj.shared;
+         obj.total_total = obj.mine_total + obj.shared_total;
+         i_util.rJson(res, obj);
+      } catch(err) {
+         console.error(err);
+         i_util.e500(res);
+      }
+   }),
 };
 
 api.webRestful = restful;
