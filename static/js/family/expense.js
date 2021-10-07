@@ -342,6 +342,12 @@ function loadData(year, month) {
 
 function updateYearlySummary(data) {
    data = JSON.parse(data);
+   data.total = formatNumber(data.total);
+   data.total = formatNumber(data.total_total);
+   data.total = formatNumber(data.mine);
+   data.total = formatNumber(data.mine_total);
+   data.total = formatNumber(data.shared);
+   data.total = formatNumber(data.shared_total);
    ui.btn.yearly_summary.innerHTML = 'Yearly Total:<br/>';
    ui.btn.yearly_summary.appendChild(
       document.createTextNode(' - Total: ' + data.total + ' / ' + data.total_total)
