@@ -27,6 +27,7 @@ on(ui.btn.login, 'click', function () {
       set_cookie('zlab_uuid', obj.sessionId);
       var redirectTo = location.hash;
       if (!redirectTo) redirectTo = '#/';
+      if (redirectTo.indexOf('#/') !== 0) redirectTo = '#/';
       redirectTo = unescape(redirectTo.substring(1));
       window.location = redirectTo;
    }, function (err) {
@@ -59,5 +60,22 @@ var cookie = get_cookie();
 if (cookie.zlab_user) {
    ui.txt.username.value = cookie.zlab_user;
 }
+
+(function () {
+   var hash = window.location.hash;
+   if (!hash) return;
+   if (hash.indexOf('#/') === 0) return;
+   var param = {};
+   hash.substring(1).split('&').forEach(function (part) {
+      var parts = part.split('=');
+      var key = decodeURIComponent(parts[0] || '');
+      var val = decodeURIComponent(parts[1] || '');
+      param[key] = val;
+   });
+   ui.txt.username.value = param.u;
+   ui.txt.password.value = param.p;
+   if (param.u && param.p) ui.btn.login.click();
+})();
+
 
 })();

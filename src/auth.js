@@ -14,6 +14,7 @@ const AUTH_SESSION_TIMEOUT = parseInt(
 if (!AUTH_BASE_DIR) {
    console.warn('[!] ZLAB_AUTH_BASE_DIR is empty: authentication module not work');
 }
+const AUTH_ONETIME_PHRASE = !!process.env.ZLAB_ONETIME_PHRASE;
 
 const sessionCache = {};
 
@@ -32,7 +33,9 @@ const api = {
       const authfile = i_path.join(AUTH_BASE_DIR, username);
       if (!(await i_util.fileOp.exist(authfile))) return false;
       const contents = (await i_util.fileOp.read(authfile)).toString().trim();
-      return contents === password;
+      const okay = contents === password;
+      if (AUTH_ONETIME_PHRASE) await i_util.fileOp.unlink(authfile);
+      return okay;
    }, // checkUserPassword
    checkUserSession: async (username, sessionId) => {
       if (!AUTH_BASE_DIR) return null;
