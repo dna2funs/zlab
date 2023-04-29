@@ -2,6 +2,7 @@ const i_fs = require('fs');
 const i_path = require('path');
 const i_url = require('url');
 
+const i_env = require('./env');
 const i_auth = require('./auth');
 const i_api = {
    test: (req, res, options) => {
@@ -13,22 +14,6 @@ const i_api = {
          expense: require('./app/family/expense').webRestful,
       }, // family
    }, // app
-};
-
-const i_env = {
-   debug: !!process.env.ZLAB_DEBUG,
-   server: {
-      host: process.env.ZLAB_HOST || '127.0.0.1',
-      port: parseInt(process.env.ZLAB_PORT || '8080'),
-      staticDir: (
-         process.env.ZLAB_STATIC_DIR?
-         i_path.resolve(process.env.ZLAB_STATIC_DIR):null
-      ),
-      httpsCADir: (
-         process.env.ZLAB_HTTPS_CA_DIR?
-         i_path.resolve(process.env.ZLAB_HTTPS_CA_DIR):null
-      ),
-   },
 };
 
 const Mime = {

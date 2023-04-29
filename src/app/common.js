@@ -1,16 +1,8 @@
-const i_path = require('path');
-
-const ZLAB_APP_DATA_BASE_DIR = (
-   process.env.ZLAB_APP_DATA_BASE_DIR?
-   i_path.resolve(process.env.ZLAB_APP_DATA_BASE_DIR):null
-);
-if (!ZLAB_APP_DATA_BASE_DIR) {
-   console.warn('[!] ZLAB_APP_DATA_BASE_DIR is empty: app persistence is disabled');
-}
+const i_env = require('../env');
 
 const api = {
    config: {
-      baseDir: ZLAB_APP_DATA_BASE_DIR
+      baseDir: i_env.server.app.baseDir,
    },
 };
 

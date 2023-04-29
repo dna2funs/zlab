@@ -2,19 +2,8 @@ const i_fs = require('fs');
 const i_path = require('path');
 const i_uuid = require('uuid');
 
+const i_env = require('./env');
 const i_util = require('./util');
-
-const AUTH_BASE_DIR = (
-   process.env.ZLAB_AUTH_BASE_DIR?
-   i_path.resolve(process.env.ZLAB_AUTH_BASE_DIR):null
-);
-const AUTH_SESSION_TIMEOUT = parseInt(
-   process.env.ZLAB_ATUH_TIMEOUT || `${24 * 3600}`
-) * 1000 || Infinity;
-if (!AUTH_BASE_DIR) {
-   console.warn('[!] ZLAB_AUTH_BASE_DIR is empty: authentication module not work');
-}
-const AUTH_ONETIME_PHRASE = !!process.env.ZLAB_ONETIME_PHRASE;
 
 const sessionCache = {};
 
@@ -27,18 +16,18 @@ function validateUsername(username) {
 
 const api = {
    checkUserPassword: async (username, password) => {
-      if (!AUTH_BASE_DIR) return false;
+      if (!i_env.server.auth.baseDir) return false;
       if (!username || !password) return false;
       if (!validateUsername(username)) return false;
-      const authfile = i_path.join(AUTH_BASE_DIR, username);
+      const authfile = i_path.join(i_env.server.auth.baseDir, username);
       if (!(await i_util.fileOp.exist(authfile))) return false;
       const contents = (await i_util.fileOp.read(authfile)).toString().trim();
       const okay = contents === password;
-      if (AUTH_ONETIME_PHRASE) await i_util.fileOp.unlink(authfile);
+      if (i_env.server.auth.oneTimePhrase) await i_util.fileOp.unlink(authfile);
       return okay;
    }, // checkUserPassword
    checkUserSession: async (username, sessionId) => {
-      if (!AUTH_BASE_DIR) return null;
+      if (!i_env.server.auth.baseDir) return null;
       if (!username || !sessionId) return null;
       if (!validateUsername(username)) return null;
 
@@ -53,7 +42,7 @@ const api = {
          return expect;
       }
 
-      const basedir = i_path.join(AUTH_BASE_DIR, '..session');
+      const basedir = i_path.join(i_env.server.auth.baseDir, '..session');
       const sessfile = i_path.join(basedir, username);
       try {
          const obj = JSON.parse(await i_util.fileOp.read(sessfile));
@@ -65,25 +54,25 @@ const api = {
       }
    }, // checkUserSession
    getUserSession: async (username) => {
-      if (!AUTH_BASE_DIR) return null;
+      if (!i_env.server.auth.baseDir) return null;
       if (!validateUsername(username)) return null;
       let sessionId = '';
 
       const cache = sessionCache[username];
       if (cache) {
-         if (new Date().getTime() - cache.mtime <= AUTH_SESSION_TIMEOUT) {
+         if (new Date().getTime() - cache.mtime <= i_env.server.auth.sessionDuration) {
             sessionId = cache.uuid;
             return sessionId;
          }
       }
 
-      const basedir = i_path.join(AUTH_BASE_DIR, '..session');
+      const basedir = i_path.join(i_env.server.auth.baseDir, '..session');
       const sessfile = i_path.join(basedir, username);
       if (!(await i_util.fileOp.exist(basedir))) await i_util.fileOp.mkdir(basedir);
       try {
          const obj = JSON.parse(await i_util.fileOp.read(sessfile));
          sessionCache[username] = { mtime: obj.mtime, uuid: obj.uuid };
-         if (new Date().getTime() - obj.mtime <= AUTH_SESSION_TIMEOUT) {
+         if (new Date().getTime() - obj.mtime <= i_env.server.auth.sessionDuration) {
             sessionId = obj.uuid;
          }
       } catch (err) {
@@ -101,9 +90,9 @@ const api = {
       return sessionId;
    }, // getuserSession
    removeUserSession: async (username) => {
-      if (!AUTH_BASE_DIR) return false;
+      if (!i_env.server.auth.baseDir) return false;
       if (!validateUsername(username)) return false;
-      const basedir = i_path.join(AUTH_BASE_DIR, '..session');
+      const basedir = i_path.join(i_env.server.auth.baseDir, '..session');
       const sessfile = i_path.join(basedir, username);
       if (!(await i_util.fileOp.exist(sessfile))) return false;
       await i_util.fileOp.unlink(sessfile);
