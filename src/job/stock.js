@@ -411,7 +411,8 @@ async function act(query) {
       for (let i = 0, n = files.length; i < n; i++) {
          const name = files[i].split('.')[0];
          const fname = i_path.join(i_env.app.stock.dataDir, files[i]);
-         const oner = evaluate(expr, await asyncLoaddata(fname));
+         let oner = evaluate(expr, await asyncLoaddata(fname));
+         while (Array.isArray(oner) && oner.length === 1) oner = oner[0];
          r[name] = oner;
       }
       return { type: 'filter', result: r }

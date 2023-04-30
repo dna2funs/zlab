@@ -53,7 +53,7 @@ function buildFilterResult(div, query, result) {
       result = Object.keys(result).map(function (k) {
          return [k, result[k]];
       });
-      result.sort((a, b) => {
+      result.sort(function (a, b) {
          var va = a[1], vb = b[1];
          if (isNaN(va) && isNaN(vb)) return 0;
          if (isNaN(va)) return 1;
