@@ -379,6 +379,28 @@ function loaddata(fname) {
    } catch (err) {};
    return data;
 }
+async function asyncLoaddata(fname) {
+   const data = [];
+   try {
+      (await asyncReadFile(fname)).toString().split('\n').map(
+         line => line && JSON.parse(line)
+      ).forEach(x => {
+         if (!x) return;
+         x.date = new Date(x.date).getTime();
+         x.st = parseFloat(x.st);
+         x.ed = parseFloat(x.ed);
+         x.min = parseFloat(x.min);
+         x.max = parseFloat(x.max);
+         x.amount = parseFloat(x.amount);
+         x.money = parseFloat(x.money);
+         data.push(x);
+      });
+   } catch (err) {};
+   return data;
+
+   function asyncReadFile(fname) { return new Promise((r) => { i_fs.readFile(fname, (err, buf) => { if (err) r(null); else r(buf); }); }); }
+   function asyncStat(fname) { return new Promise((r) => { i_fs.stat(fname, (err, s) => { if (err) r(null); else r(s); }); }); }
+}
 
 async function act(query) {
    const tokens = tokenize(query);
@@ -389,7 +411,7 @@ async function act(query) {
       for (let i = 0, n = files.length; i < n; i++) {
          const name = files[i].split('.')[0];
          const fname = i_path.join(i_env.app.stock.dataDir, files[i]);
-         const oner = evaluate(expr, loaddata(fname));
+         const oner = evaluate(expr, await asyncLoaddata(fname));
          r[name] = oner;
       }
       return { type: 'filter', result: r }
