@@ -23,6 +23,17 @@
          <div>
             <div class="item item-red">所载文章、数据等内容纯属作者个人观点，仅供投资者参考，并不构成投资建议。投资者据此操作，风险自担。</div>
             <div class="item item-yellow">Stock Query</div>
+            <div class="item item-green">
+               <div>例子</div>
+               <div style="font-size: 10px">- 单个计算</div>
+               <div><code>(sz000001.close.today - sz000001.open.today) / sz000001.open.today</code></div>
+               <div><code>min(sz000001.close.at(day(-1), day(-4), day(-8)))</code></div>
+               <div><code>avg(sz000001.min.atrange(week(-1)))</code></div>
+               <div><code>sum(sz000001.max.atrange(thisweek(-5))) / avg(sz000001.amount.atrange(year(-1)))</code></div>
+               <div style="font-size: 10px">- 全局计算</div>
+               <div><code>(.close.today - .open.today)/.open.today &gt; 0.04</code></div>
+               <div><code>(.close.today / sh000001.close.today)</code></div>
+            </div>
             <div class="item item-purple">
                Command: <div class="full-width">
                   <input class="item-input" id="txt-cmd" placeholder="e.g. sz000001.open.today" />
