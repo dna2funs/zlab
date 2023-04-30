@@ -1,3 +1,6 @@
+const i_fs = require('fs');
+const i_path = require('path');
+const i_env = require('./env');
 
 /*
  * <T> = open, close, max, min
@@ -27,6 +30,14 @@ function tokenize(query) {
       }, []
    );
    return tokens;
+}
+
+function isFilterQuery(tokens) {
+   for (let i = 0, n = tokens.length; i < n; i++) {
+      const t = tokens[i];
+      if (t.startsWith('.')) return true;
+   }
+   return false;
 }
 
 function getLast(list) {
@@ -187,13 +198,16 @@ function getRecordsByRange(datatable, a, b) {
 
 const DT_1DAY = 24 * 3600 * 1000;
 const DT_1WEEK = DT_1DAY * 7;
+const colmap = { open: 'st', close: 'ed' };
 function fncall(fn, args, datatable, cache) {
    if (typeof(fn) !== 'string') return fn;
    if (!fn) return NaN;
    while (Array.isArray(args) && args.length === 1) args = args[0];
-   if (fn.startsWith('.')) {
-      const parts = fn.split('.');
-      const col = parts[1];
+   const parts = fn.split('.');
+   if (parts[0] === '' || parts[0].startsWith('sh') || parts[0].startsWith('sz') || parts[0].startsWith('bj')) {
+      const stockid = parts[0];
+      if (stockid) datatable = loaddata(i_path.join(i_env.app.stock.dataDir, `${stockid}.json`));
+      const col = colmap[parts[1]] || parts[1];
       const subfn = parts[2];
       switch(subfn) {
       case 'today': {
@@ -207,7 +221,7 @@ function fncall(fn, args, datatable, cache) {
          if (typeof(getLast(args)) === 'string') args = [args];
          args.forEach(x => {
             if (Array.isArray(x)) {
-               const ldts = last.date;
+               const ldts = last ? last.date : 0;
                const dt = x.pop();
                x.forEach(z => {
                   switch (dt) {
@@ -288,16 +302,18 @@ function fncall(fn, args, datatable, cache) {
    case 'year': return Array.isArray(args) ? (args.push('365') && args) : [args || 0, '365'];
    case 'thisweek': return Array.isArray(args) ? (args.push('7-') && args) : [args || 0, '7-'];
    case 'thisyear': return Array.isArray(args) ? (args.push('365-') && args) : [args || 0, '365-'];
-   case 'sum':
-   case 'math.sum': return Array.isArray(args) ? args.reduce((a, x) => a + x, 0) : args;
    case 'average':
    case 'math.average':
    case 'avg':
    case 'math.avg': return Array.isArray(args) ? args.reduce((a, x) => a + x, 0) / args.length : args;
+   case 'abs':
+   case 'math.abs': return Array.isArray(args) ? args.map(x => Math.abs(x)) : Math.abs(args);
    case 'max':
    case 'math.max': return Array.isArray(args) ? Math.max(...args) : args;
    case 'min':
    case 'math.min': return Array.isArray(args) ? Math.min(...args) : args;
+   case 'sum':
+   case 'math.sum': return Array.isArray(args) ? args.reduce((a, x) => a + x, 0) : args;
    case 'floor':
    case 'math.floor': return Array.isArray(args) ? args.map(x => Math.floor(x)) : Math.floor(args);
    case 'ceil':
@@ -344,31 +360,62 @@ function evaluate(tree, datatable, cache) {
    }
 }
 
-const i_fs = require('fs');
 function loaddata(fname) {
    const data = [];
-   i_fs.readFileSync(fname).toString().split('\n').map(
-      line => line && JSON.parse(line)
-   ).forEach(x => {
-      if (!x) return;
-      x.date = new Date(x.date).getTime();
-      x.open = parseFloat(x.st);
-      x.close = parseFloat(x.ed);
-      x.min = parseFloat(x.min);
-      x.max = parseFloat(x.max);
-      x.amount = parseFloat(x.amount);
-      x.money = parseFloat(x.money);
-      data.push(x);
-   });
+   try {
+      i_fs.readFileSync(fname).toString().split('\n').map(
+         line => line && JSON.parse(line)
+      ).forEach(x => {
+         if (!x) return;
+         x.date = new Date(x.date).getTime();
+         x.st = parseFloat(x.st);
+         x.ed = parseFloat(x.ed);
+         x.min = parseFloat(x.min);
+         x.max = parseFloat(x.max);
+         x.amount = parseFloat(x.amount);
+         x.money = parseFloat(x.money);
+         data.push(x);
+      });
+   } catch (err) {};
    return data;
+}
+
+async function act(query) {
+   const tokens = tokenize(query);
+   const expr = compileWrap(tokens);
+   if (isFilterQuery(tokens)) {
+      const files = await ls(i_env.app.stock.dataDir);
+      const r = {};
+      for (let i = 0, n = files.length; i < n; i++) {
+         const name = files[i].split('.')[0];
+         const fname = i_path.join(i_env.app.stock.dataDir, files[i]);
+         const oner = evaluate(expr, loaddata(fname));
+         r[name] = oner;
+      }
+      return { type: 'filter', result: r }
+   } else {
+      const r = evaluate(expr);
+      return { type: 'calc', result: r }
+   }
+
+   function ls(path) {
+      return new Promise((r) => {
+         i_fs.readdir(path, (err, list) => {
+            if (err) return r([]);
+            r(list.filter(x => x.endsWith('.json')));
+         });
+      })
+   }
 }
 
 const api = {
    loaddata,
    tokenize,
+   isFilterQuery,
    compile: compileWrap,
    evaluate,
    // evaluate(compile(tokenize(...), loaddata(...)))
+   act,
 };
 
 module.exports = api;

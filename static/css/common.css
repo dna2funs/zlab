@@ -69,6 +69,7 @@ div.full-width > .item-input {
    flex-grow: 1;
 }
 .disabled {
+   opacity: 0.8;
    pointer-events: none;
 }
 .item {

@@ -3,6 +3,7 @@ const i_path = require('path');
 const i_url = require('url');
 
 const i_env = require('./env');
+const i_job_env = require('./job/env');
 const i_auth = require('./auth');
 const i_api = {
    test: (req, res, options) => {
@@ -176,6 +177,75 @@ const server = createServer({
    auth: i_auth.webRestful,
    api: i_api,
 });
+
+const wsapi = {
+   safeClose: (ws) => {
+      if (!ws) return;
+      try { ws.terminate() } catch(err) { }
+   },
+   safeSend: (ws, buf) => {
+      if (!ws) return;
+      if (ws.readyState !== ws.OPEN) return;
+      try { ws.send(buf); } catch(err) { }
+   },
+   safeSendJson: (ws, json) => {
+      return wsapi.safeSend(ws, JSON.stringify(json));
+   },
+};
+
+const i_spawn = require('child_process').spawn;
+function createJobStock(ws, local, m) {
+   try {
+      if (local.job) {
+         if (m.sub === 'cancel') local.job.kill();
+         return;
+      }
+      const p = i_spawn('node', [i_env.server.app.stock.exec, m.query]);
+      local.job = p;
+      p.stdout.on('data', (data) => {
+         try {
+            const json = JSON.parse(data);
+            const obj = { id: m.id, json };
+            wsapi.safeSendJson(ws, obj);
+         } catch (err) {}
+      });
+      p.stderr.on('data', (_) => {});
+      p.on('close', (code) => {
+         wsapi.safeSendJson(ws, { id: m.id, done: true, code });
+         local.job = null;
+      });
+   } catch (err) {
+      // XXX+TODO: double check local.job process status
+      local.job = null;
+   }
+}
+const i_makeWebsocket = require('./websocket').makeWebsocket;
+i_makeWebsocket(server, 'job', '/job', (ws, local, m) => {
+   if (m && m.cmd === 'auth') {
+      if (!m.user || !m.uuid) return;
+      i_auth.checkUserSession(m.user, m.uuid).then(updatedSessionId => {
+         const authres = { auth: true };
+         if (m.uuid !== updatedSessionId) authres.nextSessionId = updatedSessionId;
+         wsapi.safeSendJson(ws, authres);
+         local.authenticated = true;
+      });
+      return;
+   }
+   if (!local.authenticated) return;
+   // TODO: accept job and calc using task.js
+   switch(m.cmd) {
+   case '/stock': return createJobStock(ws, local, m);
+   }
+}, {
+   timeout: 3000,
+   onOpen: (ws, local) => {},
+   onClose: (ws, local) => {
+      if (local.job) { try { local.job.kill(); } catch (err) {} }
+      local.job = null;
+   },
+   onError: (err, ws, local) => {},
+});
+
 server.listen(i_env.server.port, i_env.server.host, () => {
    console.log(`zLab server is listening at ${i_env.server.host}:${i_env.server.port}`);
 });

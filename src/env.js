@@ -32,14 +32,17 @@ const env = {
             process.env.ZLAB_APP_DATA_BASE_DIR?
             i_path.resolve(process.env.ZLAB_APP_DATA_BASE_DIR):null
          ),
+         stock: {
+            exec: process.env.SUB_APP_STOCK_EXEC,
+         },
       },
    },
 };
 
-if (!i_env.server.auth.baseDir) {
+if (!env.server.auth.baseDir) {
    console.warn('[!] ZLAB_AUTH_BASE_DIR is empty: authentication module not work');
 }
-if (!i_env.server.app.baseDir) {
+if (!env.server.app.baseDir) {
    console.warn('[!] ZLAB_APP_DATA_BASE_DIR is empty: app persistence is disabled');
 }
 
