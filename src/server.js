@@ -191,6 +191,8 @@ const wsapi = {
    safeSendJson: (ws, json) => {
       return wsapi.safeSend(ws, JSON.stringify(json));
    },
+   autoid: 0,
+   idInc: () => { wsapi.autoid = (wsapi.autodi + 1) % 10000000; },
 };
 
 const i_spawn = require('child_process').spawn;
@@ -200,18 +202,27 @@ function createJobStock(ws, local, m) {
          if (m.sub === 'cancel') local.job.kill();
          return;
       }
-      const p = i_spawn('node', [i_env.server.app.stock.exec, m.query]);
+      const outfname = i_path.join(i_job_env.app.stock.retDir, `${local.rid}`);
+      const p = i_spawn('node', [i_env.server.app.stock.exec, m.query, outfname]);
       local.job = p;
-      p.stdout.on('data', (data) => {
-         try {
-            const json = JSON.parse(data);
-            const obj = { id: m.id, json };
-            wsapi.safeSendJson(ws, obj);
-         } catch (err) {}
-      });
-      p.stderr.on('data', (_) => {});
       p.on('close', (code) => {
-         wsapi.safeSendJson(ws, { id: m.id, done: true, code });
+         try {
+            i_fs.readFile(outfname, (err, buf) => {
+               if (err) return;
+               try {
+                  const json = JSON.parse(buf);
+                  wsapi.safeSendJson(ws, { id: local.rid, json });
+               } catch (err) {
+               } finally {
+                  i_fs.unlink(outfname, () => {});
+               }
+            });
+         } catch (err) {
+         }
+         try {
+            wsapi.safeSendJson(ws, { id: local.rid, done: true, code });
+         } catch (err) {
+         }
          local.job = null;
       });
    } catch (err) {
@@ -221,17 +232,20 @@ function createJobStock(ws, local, m) {
 }
 const i_makeWebsocket = require('./websocket').makeWebsocket;
 i_makeWebsocket(server, 'job', '/job', (ws, local, m) => {
-   if (m && m.cmd === 'auth') {
-      if (!m.user || !m.uuid) return;
-      i_auth.checkUserSession(m.user, m.uuid).then(updatedSessionId => {
-         const authres = { auth: true };
-         if (m.uuid !== updatedSessionId) authres.nextSessionId = updatedSessionId;
-         wsapi.safeSendJson(ws, authres);
-         local.authenticated = true;
-      });
+   if (!local.authenticated) {
+      if (m && m.cmd === 'auth') {
+         if (!m.user || !m.uuid) return;
+         i_auth.checkUserSession(m.user, m.uuid).then(updatedSessionId => {
+            const authres = { auth: true };
+            if (m.uuid !== updatedSessionId) authres.nextSessionId = updatedSessionId;
+            wsapi.safeSendJson(ws, authres);
+            local.authenticated = true;
+            local.rid = wsapi.autoid;
+            wsapi.idInc();
+         });
+      }
       return;
    }
-   if (!local.authenticated) return;
    // TODO: accept job and calc using task.js
    switch(m.cmd) {
    case '/stock': return createJobStock(ws, local, m);

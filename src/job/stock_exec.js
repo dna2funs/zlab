@@ -5,8 +5,14 @@ const i_stock = require('./stock');
 
 async function main() {
    const query = process.argv[2];
+   const outputfname = process.argv[3];
    const r = await i_stock.act(query);
-   console.log(JSON.stringify(r));
+   const outjson = JSON.stringify(r);
+   if (outputfname) {
+      i_fs.writeFileSync(outputfname, outjson);
+   } else {
+      console.log(outjson);
+   }
 }
 
 (async () => { await main(); })();

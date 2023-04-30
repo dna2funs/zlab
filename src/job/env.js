@@ -7,6 +7,7 @@ const env = {
    app: {
       stock: {
          dataDir: i_path.resolve(process.env.SUB_APP_STOCK_DATADIR),
+         retDir: i_path.resolve(process.env.SUB_APP_STOCK_RETDIR),
          // retDir: i_path.resolve(process.env.SUB_APP_STOCK_RETDIR),
       },
    },
