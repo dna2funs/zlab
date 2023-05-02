@@ -6,6 +6,7 @@ var ui = {
       result: dom('#lbl-result')
    },
    txt: {
+      selectedstock: dom('#txt-selectedstock'),
       cmd: dom('#txt-cmd')
    },
    btn: {
@@ -36,22 +37,26 @@ function appendLongResult(tbl, list, i, n) {
       td0.appendChild(document.createTextNode(x[0]));
       var td1 = document.createElement('td');
       td1.appendChild(document.createTextNode(x[1]));
+      var td2 = document.createElement('td');
+      td2.appendChild(document.createTextNode(x[2] || ' '));
       tr.appendChild(td0);
       tr.appendChild(td1);
+      tr.appendChild(td2);
       tbl.appendChild(tr);
    }
    setTimeout(appendLongResult, 0, tbl, list, i + n, n);
 }
 
-function buildFilterResult(div, query, result) {
+function buildFilterResult(div, query, result, idname) {
    while (div.children.length) div.removeChild(div.children[0]);
    div.innerHTML = '';
    var tdiv = document.createElement('div');
    tdiv.appendChild(document.createTextNode('Q: ' + query));
    var rdiv = document.createElement('div');
+   idname = idname || {};
    if (result) {
       result = Object.keys(result).map(function (k) {
-         return [k, result[k]];
+         return [k, result[k], idname[k]];
       });
       result.sort(function (a, b) {
          var va = a[1], vb = b[1];
@@ -65,7 +70,7 @@ function buildFilterResult(div, query, result) {
       rdiv.appendChild(document.createTextNode('A:'));
       var tbldiv = document.createElement('div');
       var tbl = document.createElement('table');
-      tbl.innerHTML = '<thead><th>code</th><th>result</th></thead><tbody></tbody>';
+      tbl.innerHTML = '<thead><th>code</th><th>result</th><th>name</th></thead><tbody></tbody>';
       appendLongResult(tbl.children[1], result, 0, 50);
       tbldiv.appendChild(tbl);
       rdiv.appendChild(tbldiv);
@@ -83,7 +88,7 @@ function onWsMessage(evt) {
          if (json.json.type === 'calc') {
             buildCalcResult(ui.label.result, env.query, json.json.result);
          } else if (json.json.type === 'filter') {
-            buildFilterResult(ui.label.result, env.query, json.json.result);
+            buildFilterResult(ui.label.result, env.query, json.json.result, json.json.idname);
          } else {
             ui.label.result.innerHTML = '(Empty)';
          }
@@ -91,7 +96,8 @@ function onWsMessage(evt) {
          sendJson(evt.target, {
             id: '---',
             cmd: '/stock',
-            query: env.query
+            query: env.query,
+            selectedids: env.selectedids
          });
       } else if (json.done) {
          ui.btn.run.classList.remove('disabled');
@@ -116,15 +122,18 @@ function onWsClose(evt) {
 function connect(query) {
    ui.label.result.innerHTML = 'Running ... ';
    env.query = query;
+   env.selectedids = ui.txt.selectedstock.value;
    ui.label.result.appendChild(document.createTextNode(query));
    var protocol = location.href.startsWith('https://') ? 'wss://' : 'ws://';
    var url = protocol + location.host + '/job';
    if (env.ws) {
-      sendJson(env.ws, {
+      var req = {
          id: '---',
          cmd: '/stock',
-         query: query
-      });
+         query: query,
+         selectedids: env.selectedids
+      };
+      sendJson(env.ws, req);
    } else {
       env.ws = new WebSocket(url);
       env.ws.addEventListener('message', onWsMessage);

@@ -203,7 +203,7 @@ function createJobStock(ws, local, m) {
          return;
       }
       const outfname = i_path.join(i_job_env.app.stock.retDir, `${local.rid}`);
-      const p = i_spawn('node', [i_env.server.app.stock.exec, m.query, outfname]);
+      const p = i_spawn('node', [i_env.server.app.stock.exec, m.query, outfname, m.selectedids || '']);
       local.job = p;
       p.on('close', (code) => {
          try {

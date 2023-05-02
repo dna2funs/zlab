@@ -402,24 +402,34 @@ async function asyncLoaddata(fname) {
    function asyncStat(fname) { return new Promise((r) => { i_fs.stat(fname, (err, s) => { if (err) r(null); else r(s); }); }); }
 }
 
-async function act(query) {
+async function act(query, selectedids) {
+   selectedids = selectedids || [];
    const tokens = tokenize(query);
    const expr = compileWrap(tokens);
+   const robj = {};
    if (isFilterQuery(tokens)) {
       const files = await ls(i_env.app.stock.dataDir);
       const r = {};
       for (let i = 0, n = files.length; i < n; i++) {
          const name = files[i].split('.')[0];
+         if (selectedids.length && !selectedids.includes(name)) continue;
          const fname = i_path.join(i_env.app.stock.dataDir, files[i]);
          let oner = evaluate(expr, await asyncLoaddata(fname));
          while (Array.isArray(oner) && oner.length === 1) oner = oner[0];
          r[name] = oner;
       }
-      return { type: 'filter', result: r }
+      const idnamemapfname = i_path.join(i_env.app.stock.dataDir, '_idname.map');
+      const idnamemap = {};
+      Object.assign(robj, { type: 'filter', result: r });
+      try {
+         Object.assign(idnamemap, JSON.parse(i_fs.readFileSync(idnamemapfname)));
+      } catch(err) { }
+      if (Object.keys(idnamemap).length > 0) robj.idname = idnamemap;
    } else {
       const r = evaluate(expr);
-      return { type: 'calc', result: r }
+      Object.assign(robj, { type: 'calc', result: r });
    }
+   return robj;
 
    function ls(path) {
       return new Promise((r) => {
