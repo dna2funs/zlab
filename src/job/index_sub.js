@@ -84,4 +84,4 @@ function watchDog() {
    setTimeout(watchDog, 10*1000);
 }
 
-watchDog();
+//watchDog();

@@ -178,6 +178,7 @@ const server = createServer({
    api: i_api,
 });
 
+/*
 const wsapi = {
    safeClose: (ws) => {
       if (!ws) return;
@@ -205,6 +206,8 @@ function createJobStock(ws, local, m) {
       const outfname = i_path.join(i_job_env.app.stock.retDir, `${local.rid}`);
       const p = i_spawn('node', [i_env.server.app.stock.exec, m.query, outfname, m.selectedids || '']);
       local.job = p;
+p.stdout.pipe(process.stdout);
+p.stderr.pipe(process.stderr);
       p.on('close', (code) => {
          try {
             i_fs.readFile(outfname, (err, buf) => {
@@ -259,6 +262,7 @@ i_makeWebsocket(server, 'job', '/job', (ws, local, m) => {
    },
    onError: (err, ws, local) => {},
 });
+*/
 
 server.listen(i_env.server.port, i_env.server.host, () => {
    console.log(`zLab server is listening at ${i_env.server.host}:${i_env.server.port}`);
